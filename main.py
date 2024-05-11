@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import secrets
 import sys
 import time
@@ -153,6 +154,12 @@ def cli():
     default="./",
 )
 @click.option(
+    "--device",
+    type=str,
+    help="OpenCL device selection. Same format as PYOPENCL_CTX environment variables.",
+    default="0",
+)
+@click.option(
     "--select-device/--no-select-device",
     type=bool,
     help="Select OpenCL device manually",
@@ -171,6 +178,7 @@ def search_pubkey(
     ends_with: str,
     count: int,
     output_dir: str,
+    device: str,
     select_device: bool,
     iteration_bits: int,
 ):
@@ -188,17 +196,10 @@ def search_pubkey(
         f"Searching Solana pubkey that starts with '{starts_with}' and ends with '{ends_with}'"
     )
 
-    if select_device:
-        context = cl.create_some_context()
-    else:
-        # get all platforms and devices
-        devices = [
-            device
-            for platform in cl.get_platforms()
-            for device in platform.get_devices()
-        ]
-        context = cl.Context(devices)
+    if not select_device and device:
+        os.environ["PYOPENCL_CTX"] = device
 
+    context = cl.create_some_context()
     logging.info(f"Searching with {len(context.devices)} OpenCL devices")
 
     kernel_source = get_kernel_source(starts_with, ends_with)
