@@ -1,3 +1,4 @@
+import signal
 import subprocess
 import sys
 import time
@@ -6,6 +7,11 @@ from os import listdir
 import click
 import pyopencl as cl
 import requests
+
+
+def quit(signum, frame):
+    print("Exiting...")
+    subprocess.run("kill -9 $(ps aux | grep 'python' | awk '{print $2}')")
 
 
 @click.command()
@@ -42,6 +48,9 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
     last_files = None
 
     while True:
+        signal.signal(signal.SIGINT, quit)
+        signal.signal(signal.SIGTERM, quit)
+
         files = listdir("./")
 
         if last_files is not None:
@@ -56,9 +65,6 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
                             "text": f"Found pubkey: {file_name}",
                         },
                     )
-
-            if len(diff) > 0:
-                subprocess.run("kill -9 $(ps aux | grep 'python' | awk '{print $2}')")
 
         last_files = files
 
