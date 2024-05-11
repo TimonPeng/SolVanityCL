@@ -45,7 +45,7 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
         files = listdir("./")
 
         if last_files is not None:
-            diff = files - last_files
+            diff = set(files) - set(last_files)
 
             for file_name in diff:
                 if file_name.endswith(".json"):
