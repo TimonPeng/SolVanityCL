@@ -22,22 +22,22 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
     platforms = cl.get_platforms()[platform_id]
     devices = platforms.get_devices()
 
-    # if len(devices) == 1:
-    #     print("Only one device found, running single instance")
-    #     sys.exit(1)
+    if len(devices) == 1:
+        print("Only one device found, running single instance")
+        sys.exit(1)
 
-    # for device_index in range(len(devices)):
-    #     subprocess.Popen(
-    #         [
-    #             "python3",
-    #             "main.py",
-    #             "search-pubkey",
-    #             "--device",
-    #             f"{platform_id}:{device_index}",
-    #             "--starts-with",
-    #             starts_with,
-    #         ]
-    #     )
+    for device_index in range(len(devices)):
+        subprocess.Popen(
+            [
+                "python3",
+                "main.py",
+                "search-pubkey",
+                "--device",
+                f"{platform_id}:{device_index}",
+                "--starts-with",
+                starts_with,
+            ]
+        )
 
     last_files = None
 
