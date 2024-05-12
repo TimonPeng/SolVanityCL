@@ -1,3 +1,4 @@
+import platform
 import signal
 import subprocess
 import sys
@@ -28,7 +29,7 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
     platforms = cl.get_platforms()[platform_id]
     devices = platforms.get_devices()
 
-    passwd = click.prompt("Please enter the ZIP password", type=str, hide_input=True)
+    # passwd = click.prompt("Please enter the ZIP password", type=str, hide_input=True)
 
     if len(devices) == 1:
         print("Only one device found, running single instance")
@@ -47,6 +48,15 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
             ]
         )
 
+    hostname = platform.node()
+    requests.post(
+        f"https://api.telegram.org/bot{telegram_token}/sendDocument",
+        data={
+            "chat_id": telegram_chat_id,
+            "text": f"Started searching '{starts_with}' on {hostname}",
+        },
+    )
+
     last_files = None
 
     while True:
@@ -57,7 +67,6 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
 
         if last_files is not None:
             diff = set(files) - set(last_files)
-            print(diff)
 
             for file_name in diff:
                 if file_name.endswith(".json"):
