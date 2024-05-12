@@ -232,8 +232,6 @@ def search_pubkey(
 
         result_count += 1
 
-        time.sleep(0.1)
-
 
 @cli.command(context_settings={"show_default": True})
 def show_device():
