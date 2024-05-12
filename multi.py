@@ -50,7 +50,7 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
 
     hostname = platform.node()
     requests.post(
-        f"https://api.telegram.org/bot{telegram_token}/sendDocument",
+        f"https://api.telegram.org/bot{telegram_token}/sendMessage",
         data={
             "chat_id": telegram_chat_id,
             "text": f"Started searching '{starts_with}' on {hostname}",
