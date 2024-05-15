@@ -8,7 +8,7 @@ python3 -m pip install -r requirements.txt
 pip3 install -r requirements.txt
 ```
 
-Requires Python 3.6 or higher.
+Requires Python 3.8 or higher.
 
 ## Usage
 

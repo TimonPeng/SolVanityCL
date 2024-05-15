@@ -1,4 +1,4 @@
 click
-pyopencl
+pyopencl>=2024.2
 base58
 PyNaCl

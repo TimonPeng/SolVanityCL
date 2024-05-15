@@ -51,13 +51,13 @@ def get_kernel_source(starts_with: str, ends_with: str):
 
 
 class Searcher:
-    def __init__(self, *, context, kernel_source, iteration_bits: int):
+    def __init__(self, *, device, kernel_source, iteration_bits: int):
         # context and command queue
-        self.context = context
-        self.command_queue = cl.CommandQueue(context)
+        self.context = cl.Context([device])
+        self.command_queue = cl.CommandQueue(self.context)
 
         # build program and kernel
-        program = cl.Program(context, kernel_source).build()
+        program = cl.Program(self.context, kernel_source).build()
         self.kernel = cl.Kernel(program, "generate_pubkey")
 
         self.iteration_bits = iteration_bits
@@ -155,7 +155,7 @@ def cli():
 @click.option(
     "--select-device/--no-select-device",
     type=bool,
-    help="Select OpenCL device manually",
+    help="Select OpenCL device manually.",
     default=False,
 )
 @click.option(
@@ -163,6 +163,12 @@ def cli():
     type=int,
     help="Number of the iteration occupied bits. Recommended 24, 26, 28, 30, 32. The larger the bits, the longer it takes to complete an iteration.",
     default=24,
+)
+@click.option(
+    "--debug/--no-debug",
+    type=bool,
+    help="Show debug logs.",
+    default=False,
 )
 @click.pass_context
 def search_pubkey(
@@ -173,8 +179,12 @@ def search_pubkey(
     output_dir: str,
     select_device: bool,
     iteration_bits: int,
+    debug: bool,
 ):
     """Search Solana vanity pubkey"""
+
+    if debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     if not starts_with and not ends_with:
         print("Please provides at least [starts with] or [ends with]\n")
@@ -189,7 +199,7 @@ def search_pubkey(
     )
 
     if select_device:
-        context = cl.create_some_context()
+        devices = cl.choose_devices()
     else:
         # get all platforms and devices
         devices = [
@@ -197,41 +207,42 @@ def search_pubkey(
             for platform in cl.get_platforms()
             for device in platform.get_devices()
         ]
-        context = cl.Context(devices)
 
-    logging.info(f"Searching with {len(context.devices)} OpenCL devices")
+    logging.info(f"Searching with {len(devices)} OpenCL devices")
 
     kernel_source = get_kernel_source(starts_with, ends_with)
 
-    searcher = Searcher(
-        context=context,
-        kernel_source=kernel_source,
-        iteration_bits=iteration_bits,
-    )
+    searchers = [
+        Searcher(
+            device=device,
+            kernel_source=kernel_source,
+            iteration_bits=iteration_bits,
+        )
+        for device in devices
+    ]
 
     result_count = 0
 
     while result_count < count:
-        output = searcher.find()
-        searcher.increase_key32()
+        for searcher in searchers:
+            output = searcher.find()
+            searcher.increase_key32()
 
-        if not output[0]:
-            continue
+            if not output[0]:
+                continue
 
-        pv_bytes = bytes(output[1:])
-        pv = SigningKey(pv_bytes)
-        pb_bytes = bytes(pv.verify_key)
-        pubkey = b58encode(pb_bytes).decode()
+            pv_bytes = bytes(output[1:])
+            pv = SigningKey(pv_bytes)
+            pb_bytes = bytes(pv.verify_key)
+            pubkey = b58encode(pb_bytes).decode()
 
-        logging.info(f"Found: {pubkey}")
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
-        Path(output_dir, f"{pubkey}.json").write_text(
-            json.dumps(list(pv_bytes + pb_bytes))
-        )
+            logging.info(f"Found: {pubkey}")
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            Path(output_dir, f"{pubkey}.json").write_text(
+                json.dumps(list(pv_bytes + pb_bytes))
+            )
 
-        result_count += 1
-
-        time.sleep(0.1)
+            result_count += 1
 
 
 @cli.command(context_settings={"show_default": True})
