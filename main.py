@@ -54,7 +54,7 @@ class Searcher:
     def __init__(self, *, device, kernel_source, iteration_bits: int):
         # context and command queue
         self.context = cl.Context([device])
-        self.command_queue = cl.CommandQueue(self.context)
+        self.command_queue = cl.CommandQueue(self.context, device=device)
 
         # build program and kernel
         program = cl.Program(self.context, kernel_source).build()
