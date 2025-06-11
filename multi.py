@@ -20,12 +20,18 @@ def quit(signum, frame):
 @click.option("--telegram-chat-id", type=str, help="Telegram chat ID", required=True)
 @click.option("--platform-id", type=int, help="OpenCL Platform ID", default=0)
 @click.option(
+    "--count",
+    type=int,
+    help="Count of pubkeys to generate.",
+    default=1,
+)
+@click.option(
     "--starts-with",
     type=str,
     help="Public key starts with the indicated prefix.",
     default="",
 )
-def main(telegram_token, telegram_chat_id, platform_id, starts_with):
+def main(telegram_token, telegram_chat_id, platform_id, count, starts_with):
     platforms = cl.get_platforms()[platform_id]
     devices = platforms.get_devices()
 
@@ -43,6 +49,8 @@ def main(telegram_token, telegram_chat_id, platform_id, starts_with):
                 "search-pubkey",
                 "--device",
                 f"{platform_id}:{device_index}",
+                "--count",
+                count,
                 "--starts-with",
                 starts_with,
             ]
