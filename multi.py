@@ -50,7 +50,7 @@ def main(telegram_token, telegram_chat_id, platform_id, count, starts_with):
                 "--device",
                 f"{platform_id}:{device_index}",
                 "--count",
-                count,
+                str(count),
                 "--starts-with",
                 starts_with,
             ]
