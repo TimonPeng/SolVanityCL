@@ -15,6 +15,7 @@ from core.utils.crypto import save_keypair
 from core.utils.helpers import (
     check_character,
     load_kernel_source,
+    send_telegram_file,
     send_telegram_message,
 )
 
@@ -120,7 +121,8 @@ def search_pubkey(
         send_telegram_message(
             telegram_bot_token,
             telegram_chat_id,
-            "Starting to search: starts with \\({}\\), ends with {} at __{}__".format(
+            "Starting to search with {} GPUs: starts with \\({}\\), ends with {} at __{}__".format(
+                gpu_counts,
                 ", ".join(repr(s) for s in starts_with),
                 repr(ends_with),
                 host_name,
@@ -154,13 +156,14 @@ def search_pubkey(
                 result_count += len(keypairs)
 
                 for keypair in keypairs:
-                    pubkey = save_keypair(keypair, output_dir)
+                    pubkey, filepath = save_keypair(keypair, output_dir)
 
                     if notify:
-                        send_telegram_message(
+                        send_telegram_file(
                             telegram_bot_token,
                             telegram_chat_id,
                             f"Found pubkey: `{pubkey}` at __{host_name}__",
+                            filepath,
                         )
 
 

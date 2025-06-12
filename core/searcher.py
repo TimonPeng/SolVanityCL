@@ -68,7 +68,8 @@ class Searcher:
             self.command_queue,
             self.kernel,
             (global_worker_size,),
-            (self.setting.local_work_size,),
+            # (self.setting.local_work_size,),
+            None,
         )
         self.command_queue.flush()
         self.setting.increase_key32()

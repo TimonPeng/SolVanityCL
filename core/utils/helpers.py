@@ -75,10 +75,28 @@ def send_telegram_message(bot_token: str, chat_id: str, message: str) -> None:
     """
     Send a message to a Telegram chat.
     """
+
     try:
         requests.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
             data={"chat_id": chat_id, "text": message, "parse_mode": "MarkdownV2"},
+        )
+    except Exception:
+        pass
+
+
+def send_telegram_file(
+    bot_token: str, chat_id: str, message: str, filepath: Path
+) -> None:
+    """
+    Send a message to a Telegram chat.
+    """
+
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{bot_token}/sendDocument",
+            data={"chat_id": chat_id},
+            files={"document": open(filepath, "rb")},
         )
     except Exception:
         pass

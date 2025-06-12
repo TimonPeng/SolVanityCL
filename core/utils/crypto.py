@@ -15,7 +15,7 @@ def get_public_key_from_private_bytes(pv_bytes: bytes) -> str:
     return b58encode(pb_bytes).decode()
 
 
-def save_keypair(pv_bytes: bytes, output_dir: str) -> str:
+def save_keypair(pv_bytes: bytes, output_dir: str):
     """
     Save private key to JSON file, return public key
     """
@@ -26,4 +26,4 @@ def save_keypair(pv_bytes: bytes, output_dir: str) -> str:
     file_path = Path(output_dir) / f"{pubkey}.json"
     file_path.write_text(json.dumps(list(pv_bytes + pb_bytes)))
     logging.info(f"Found: {pubkey}")
-    return pubkey
+    return pubkey, file_path
